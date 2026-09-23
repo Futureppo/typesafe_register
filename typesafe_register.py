@@ -244,8 +244,14 @@ def save_account(record):
             try:
                 data = json.loads(path.read_text(encoding="utf-8"))
                 accounts = data if isinstance(data, list) else data.get("accounts", [])
-            except (json.JSONDecodeError, OSError):
-                accounts = []
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"Existing {path.name} contains invalid JSON; refusing to overwrite it"
+                ) from exc
+            except OSError as exc:
+                raise OSError(
+                    f"Could not read existing {path.name}; refusing to overwrite it"
+                ) from exc
         accounts.append(record)
         for i, item in enumerate(accounts, 1):
             item["index"] = i
